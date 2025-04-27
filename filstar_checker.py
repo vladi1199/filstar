@@ -61,11 +61,16 @@ def check_availability_and_price(driver, sku):
         # Цена
         try:
             WebDriverWait(row, 5).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.custom-tooltip-holder span"))
+                EC.presence_of_element_located((By.CSS_SELECTOR, "div.custom-tooltip-holder"))
             )
             price_holder = row.find_element(By.CSS_SELECTOR, "div.custom-tooltip-holder")
-            price_lines = price_holder.text.strip().split('\n')
-            price_text = price_lines[1].replace('лв.', '').strip() if len(price_lines) > 1 else "0.00"
+            full_text = price_holder.text.strip()
+            lines = full_text.split('\n')
+            price_text = "0.00"
+            for line in lines:
+                if 'лв.' in line:
+                    price_text = line.replace('лв.', '').strip()
+                    break
 
         except Exception as e:
             print(f"❌ Не успях да намеря цена за SKU {sku}: {e}")
@@ -75,6 +80,7 @@ def check_availability_and_price(driver, sku):
     except Exception as e:
         print(f"❌ Грешка при обработка на SKU {sku}: {e}")
         return None, 0, None
+
 
 # Четене на SKU кодове от CSV
 def read_sku_codes(path):
