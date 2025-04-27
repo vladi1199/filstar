@@ -44,44 +44,34 @@ def find_product_url(driver, sku):
         print(f"❌ Продукт с SKU {sku} не е намерен: {e}")
         return None
 
-# Проверка на наличност, бройки и цена
+## Проверка на наличността, бройката и цената на продукта
 def check_availability_and_price(driver, sku):
     try:
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, f"tr[class*='table-row-{sku}']"))
-        )
-        row = driver.find_element(By.CSS_SELECTOR, f"tr[class*='table-row-{sku}']")
+        # Проверяваме дали редът за конкретния SKU съществува
+        try:
+            row = driver.find_element(By.CSS_SELECTOR, f"tr[class*='table-row-{sku}']")
+        except Exception as e:
+            print(f"❌ Не беше намерен ред с SKU {sku}: {e}")
+            return None, 0, None
         
-        # Бройка
+        # Извличаме наличността и цената
         qty_input = row.find_element(By.CSS_SELECTOR, "td.quantity-plus-minus input")
         max_qty_attr = qty_input.get_attribute("data-max-qty-1")
         max_qty = int(max_qty_attr) if max_qty_attr and max_qty_attr.isdigit() else 0
+        
         status = "Наличен" if max_qty > 0 else "Изчерпан"
         
-        # Цена
-        try:
-            WebDriverWait(row, 5).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.custom-tooltip-holder"))
-            )
-            price_holder = row.find_element(By.CSS_SELECTOR, "div.custom-tooltip-holder")
-            full_text = price_holder.text.strip()
-            lines = full_text.split('\n')
-            price_text = "0.00"
-            lines = full_text.split('\n')
-            if len(lines) >= 2:
-                price_line = lines[1]
-                price_text = price_line.replace('лв.', '').strip()
-            else:
-                price_text = "0.00"
-
-
-        except Exception as e:
-            print(f"❌ Не успях да намеря цена за SKU {sku}: {e}")
-            price_text = "0.00"  # Ако няма цена, задаваме 0.00
-
-        return status, max_qty, price_text
+        # Извличаме цената
+        price_element = row.find_element(By.CSS_SELECTOR, "div.custom-tooltip-holder")
+        price_text = price_element.text.strip()
+        
+        # Разделяме текста и взимаме цената
+        price_parts = price_text.split()  # Split the string into parts
+        price = price_parts[-2]  # The second last part should be the price (before "лв.")
+        
+        return status, max_qty, price
     except Exception as e:
-        print(f"❌ Грешка при обработка на SKU {sku}: {e}")
+        print(f"❌ Грешка при проверка на наличността и цената за SKU {sku}: {e}")
         return None, 0, None
 
 
