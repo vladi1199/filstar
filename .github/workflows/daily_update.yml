@@ -36,6 +36,6 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add products_sync.xml results.csv
+          git add filstar_xml.xml results_filstar.csv not_found_filstar.csv
           git commit -m "Daily auto-update XML and CSV [skip ci]" || echo "No changes to commit"
           git push
