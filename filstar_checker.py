@@ -47,28 +47,29 @@ def find_product_url(driver, sku):
 
 # Проверка на наличността, бройката и цената на продукта
 def check_availability_and_price(driver, sku):
-    try:
-        # Проверяваме дали редът за конкретния SKU съществува
-        try:
-            row = driver.find_element(By.CSS_SELECTOR, f"tr[class*='table-row-{sku}']")
-        except Exception as e:
-            print(f"❌ Не беше намерен ред с SKU {sku}: {e}")
-            return None, 0, None
-        
-        # Извличаме наличността и цената
-        qty_input = row.find_element(By.CSS_SELECTOR, "td.quantity-plus-minus input")
-        max_qty_attr = qty_input.get_attribute("data-max-qty-1")
-        max_qty = int(max_qty_attr) if max_qty_attr and max_qty_attr.isdigit() else 0
-        
-        status = "Наличен" if max_qty > 0 else "Изчерпан"
-        
-        price_element = row.find_element(By.CSS_SELECTOR, "td div.custom-tooltip-holder")
-        price_text = price_element.text.strip().split()[0]  # Взимаме само числото, без "лв."
-        
-        return status, max_qty, price_text
-    except Exception as e:
-        print(f"❌ Грешка при проверка на наличността и цената за SKU {sku}: {e}")
-        return None, 0, None
+   try:
+       # Проверяваме дали редът за конкретния SKU съществува
+       try:
+           row = driver.find_element(By.CSS_SELECTOR, f"tr[class*='table-row-{sku}']")
+       except Exception as e:
+           print(f"❌ Не беше намерен ред с SKU {sku}: {e}")
+           return None, 0, None
+      
+       # Извличаме наличността и цената
+       qty_input = row.find_element(By.CSS_SELECTOR, "td.quantity-plus-minus input")
+       max_qty_attr = qty_input.get_attribute("data-max-qty-1")
+       max_qty = int(max_qty_attr) if max_qty_attr and max_qty_attr.isdigit() else 0
+      
+       status = "Наличен" if max_qty > 0 else "Изчерпан"
+      
+       price_element = row.find_element(By.CSS_SELECTOR, "td div.custom-tooltip-holder")
+       price_text = price_element.text.strip().split()[0]  # Взимаме само числото, без "лв."
+      
+       return status, max_qty, price_text
+   except Exception as e:
+       print(f"❌ Грешка при проверка на наличността и цената за SKU {sku}: {e}")
+       return None, 0, None
+
 
 # Четене на SKU кодове от CSV
 def read_sku_codes(path):
