@@ -67,10 +67,13 @@ def check_availability_and_price(driver, sku):
             full_text = price_holder.text.strip()
             lines = full_text.split('\n')
             price_text = "0.00"
-            for line in lines:
-                if 'лв.' in line:
-                    price_text = line.replace('лв.', '').strip()
-                    break
+            lines = full_text.split('\n')
+            if len(lines) >= 2:
+                price_line = lines[1]
+                price_text = price_line.replace('лв.', '').strip()
+            else:
+                price_text = "0.00"
+
 
         except Exception as e:
             print(f"❌ Не успях да намеря цена за SKU {sku}: {e}")
