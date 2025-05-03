@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -47,31 +48,29 @@ def find_product_url(driver, sku):
 # Проверка на наличността, бройката и цената на продукта
 def check_availability_and_price(driver, sku):
     try:
-        # Проверяваме дали редът за конкретния SKU съществува
         try:
             row = driver.find_element(By.CSS_SELECTOR, f"tr[class*='table-row-{sku}']")
         except Exception as e:
             print(f"❌ Не беше намерен ред с SKU {sku}: {e}")
             return None, 0, None
         
-        # Извличаме наличността
         qty_input = row.find_element(By.CSS_SELECTOR, "td.quantity-plus-minus input")
         max_qty_attr = qty_input.get_attribute("data-max-qty-1")
         max_qty = int(max_qty_attr) if max_qty_attr and max_qty_attr.isdigit() else 0
         status = "Наличен" if max_qty > 0 else "Изчерпан"
 
-        # Извличаме цената — винаги търсим нормалната (старата) цена, ако има намаление
         price_element = row.find_element(By.CSS_SELECTOR, "div.custom-tooltip-holder")
 
         try:
-            # Ако има <strike>, взимаме стойността от него (нормалната цена)
+            # Вземаме нормалната цена от <strike>
             normal_price_el = price_element.find_element(By.TAG_NAME, "strike")
-            price = normal_price_el.text.strip()
+            raw_price = normal_price_el.text.strip()
+            price = re.findall(r'\d+\.\d+', raw_price)[0]
         except:
             # Ако няма <strike>, взимаме стандартната цена
             price_text = price_element.text.strip()
             price_parts = price_text.split()
-            price = price_parts[-2]  # преди "лв."
+            price = re.findall(r'\d+\.\d+', price_parts[-2])[0]
 
         return status, max_qty, price
 
